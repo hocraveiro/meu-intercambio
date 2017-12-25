@@ -1,0 +1,10 @@
+
+const fs = require('fs')
+const path = require('path')
+const files = fs.readdirSync('./')
+console.log(files)
+
+files.forEach((file, index) => {
+  const newName = index
+  fs.renameSync(file, `${newName}.jpeg`)
+})

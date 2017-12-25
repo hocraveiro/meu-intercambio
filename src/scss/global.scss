@@ -1,0 +1,17 @@
+@import './variables.scss';
+
+.size {
+  margin: 0 auto;
+  max-width: 90%;
+  width: 1200px;
+}
+
+#app {
+  bottom: 0px;
+  left: 0px;
+  overflow: hidden;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+
