@@ -1,7 +1,8 @@
 <template>
-  <header class="header">
-    <div class="size container justify-content-between">
-      <router-link class="header-logo" to="/">Meu Intercâmbio</router-link>
+  <header class="my-header">
+    <div class="size container justify-content-between align-items-center">
+      <my-menu inverse="true" />
+      <router-link to="/"><logo location="header"/></router-link>
       <div class="header-user">
         <img class="photo" :src="user.photoURL" @click="openMenu">
         <div class="body" :class="{'-open': isOpen}">
@@ -14,7 +15,10 @@
   </header>
 </template>
 <script>
+  import MyMenu from '@/components/Menu'
+  import Logo from '@/components/Logo'
   export default{
+    components: {MyMenu, Logo},
     computed: {
       user () {
         return this.$store.state.user
@@ -27,7 +31,6 @@
     },
     methods: {
       logout () {
-        console.log('Sair')
         this.$store.dispatch('logout')
         this.$router.push('/login')
       },
@@ -41,7 +44,7 @@
 <style lang="scss" scoped>
   @import '../scss/variables';
 
-  .header{
+  .my-header{
     background-color: $color-1;
     box-shadow: 2px 2px 5px $color-b-op7;
     height: 40px;
@@ -49,14 +52,11 @@
     top: 0px;
     width: 100%;
     z-index: 10;
+    .size{
+      height: 40px;
+    }
   }
-  .header-logo{
-    color: $color-w-op8;
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 40px;
-    text-decoration: none;
-  }
+
   .header-user{
     display: flex;
     align-items: center;

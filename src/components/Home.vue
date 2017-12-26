@@ -1,5 +1,5 @@
 <template>
-  <div class="screen home" :style="{backgroundImage: background}">
+  <div class="screen home">
     <my-header></my-header>
     <div class="size container justify-content-center justify-content-sm-around wrap">
       <div class="order-2 order-sm-1 flex-basis-300">

@@ -1,5 +1,5 @@
 <template>
-  <div class="logo">
+  <div class="logo" :class="location">
     <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 612 612" style="enable-background:new 0 0 612 612;" xml:space="preserve">
       <path d="M612,295.672c0,140.552-103.671,257.344-238.56,277.937c1.138-6.238,1.457-12.698,0.691-19.244
         c0,0-0.806-6.888-1.86-15.903c47.891-8.159,91.129-30.134,125.4-61.737c-2.057-1.711-4.106-3.93-6.126-6.876
@@ -22,26 +22,48 @@
         M250.751,522.033l78.463-27.64c3.456-1.218,7.149,1.086,7.575,4.726l6.879,58.815c1.719,14.697-6.186,28.84-19.604,35.078
         l-7.359,3.42c-4.596,2.136-10.048,0.991-13.397-2.812L248.36,531.2C245.685,528.16,246.931,523.379,250.751,522.033z"/>
     </svg>
-    <p class="text">MEU INTERCÂMBIO</p>
+    <p class="text">Meu Intercâmbio</p>
   </div>
 </template>
-<style scoped>
+<script>
+  export default {
+    props: ['location']
+  }
+</script>
+<style lang="scss" scoped>
+  @import '../scss/variables';
+
   .logo{
     width: auto;
     margin: auto;
+
+    > svg{
+      display: block;
+      fill: $color-1;
+      height: 100%;
+      width: auto;
+    }
+    > .text{
+      color: $color-1;
+      font-weight: bold;
+      font-family: Roboto;
+      margin: 0px;
+      text-align: center;
+    }
+    &.header{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      > svg{
+        fill: $color-w-op8;
+        width: 30px;
+      }
+      > .text{
+        color: $color-w-op8;
+        display: block;
+        margin-left: 10px;
+      }
+    }
   }
-  svg{
-    display: block;
-    fill: var(--color-3);
-    margin: auto;
-    width: 50%;
-  }
-  .text{
-    color: var(--color-3);
-    font-weight: bold;
-    font-family: Roboto;
-    font-size: 26px;
-    margin-top: 10px;
-    text-align: center;
-  }
+
 </style>

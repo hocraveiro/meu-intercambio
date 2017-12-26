@@ -19,11 +19,6 @@ export default {
       screen.style.backgroundPosition = `${gamma}% 50%`
     }
   },
-  computed: {
-    background () {
-      return `url(./assets/${this.$store.state.background})`
-    }
-  },
   mounted () {
     if ('DeviceOrientationEvent' in window) {
       window.addEventListener('deviceorientation', this.deviceOrientationHandler, false)

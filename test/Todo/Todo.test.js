@@ -1,10 +1,11 @@
+import jest from 'jest'
 import { shallow } from 'vue-test-utils'
 import { createRenderer } from 'vue-server-renderer'
 
 import Item from '@/components/Todo/Item'
 
 describe('Todo/Item.vue', () => {
-  const todo = {status: true, desc: 'Teste 1'}
+  const todo = {status: true, desc: 'Teste 1', id: 1}
   it('renders todo for from props.todo', () => {
     const wrapper = shallow(Item, {
       propsData: { todo }
@@ -17,7 +18,6 @@ describe('Todo/Item.vue', () => {
       propsData: {
         todo: {
           status: true,
-          isNew: true,
           desc: null
         }
       }

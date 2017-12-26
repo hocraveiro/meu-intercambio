@@ -9,7 +9,9 @@ module.exports = {
   "globals": {
     "describe": true,
     "it": true,
-    "expect": true
+    "expect": true,
+    "beforeEach": true,
+    "jest": true
   },
   env: {
     browser: true,
