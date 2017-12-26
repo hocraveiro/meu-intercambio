@@ -1,7 +1,9 @@
 <template>
   <div class="todo-card">
     <p class="title">A fazer</p>
-    <p v-if="todos.fetching">Carregando...</p>
+    <div class="loading container justify-content-center" v-if="todos.fetching">
+      <mi-spinner/>
+    </div>
     <p v-if="!todos.fetching && todos.items.length == 0">Você não tem nenhuma tarefa para realizar!</p>
     <div class="list" v-if="!todos.fetching">
       <item v-for="(todo, index) in todos.items" :todo="todo" :key="index" v-on:status="changeStatus" v-on:remove="remove"/>
@@ -14,8 +16,9 @@
 </template>
 <script>
   import Item from '@/components/Todo/Item'
+  import MiSpinner from '@/components/Spinner'
   export default{
-    components: {Item},
+    components: {Item, MiSpinner},
     computed: {
       todos () {
         return this.$store.state.todos
@@ -58,6 +61,13 @@
     max-height: 450px;
     position: relative;
 
+    > .loading {
+      margin: 30px 0;
+      .mispinner{
+        width: 30px;
+      }
+    }
+
     > .title{
       color: $color-b-op7;
       font-weight: 600;
@@ -90,4 +100,5 @@
   }
 
 </style>
+
 

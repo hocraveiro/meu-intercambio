@@ -1,7 +1,9 @@
 <template>
   <div class="timeline-card">
     <p class="title">Linha do tempo</p>
-    <p v-if="fetching">Carregando...</p>
+    <div v-if="fetching" class="loading container justify-content-center">
+      <mi-spinner/>
+    </div>
     <div class="list" v-if="!fetching">
       <p class="item -new">
         <input type="text" placeholder="+ Adicionar novo item" v-model="newItem.title">
@@ -20,37 +22,21 @@
   </div>
 </template>
 <script>
+  import MiSpinner from '@/components/Spinner'
   import moment from 'moment'
   export default {
+    components: {MiSpinner},
     data () {
       return {
         newItem: {
           title: null,
           date: moment().format('Y-M-D')
-        },
-        items: [
-          {
-            id: 1,
-            title: 'Comprei curso de ingles',
-            date: '2017-01-01'
-          },
-          {
-            id: 2,
-            title: 'Comprei pessagem para irlanda',
-            date: '2017-01-02'
-          },
-          {
-            id: 3,
-            title: 'Comprei os 3000 euros',
-            date: '2017-02-01'
-          }
-        ]
+        }
       }
     },
     methods: {
       createNewItem () {
         this.$store.dispatch('addTimelineItem', {...this.newItem})
-        // this.items.push({...this.newItem})
         this.newItem = {title: null, date: moment().format('Y-M-D')}
       }
     },
@@ -71,6 +57,13 @@
   @import '../scss/variables';
 
   .timeline-card{
+    > .loading{
+      margin: 30px 0;
+      .mispinner{
+        width: 30px;
+      }
+    }
+
     background: $color-w-op8;
     box-shadow: 0px 0px 10px $color-b-op7;
     padding: 20px;
