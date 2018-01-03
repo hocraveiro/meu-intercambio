@@ -15,7 +15,7 @@ describe('Menu.vue', () => {
     store = new Vuex.Store({state})
   })
 
-  it('should have render corretely', () => {
+  it('should have render correctly', () => {
     const wrapper = shallow(Menu, {
       propsData: {
         isOpen: false

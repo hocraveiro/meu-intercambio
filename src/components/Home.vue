@@ -1,33 +1,58 @@
 <template>
-  <div class="screen home">
+  <div class="home">
     <my-header></my-header>
-    <div class="size container justify-content-center justify-content-sm-around wrap">
-      <div class="order-2 order-sm-1 flex-basis-300">
-        <todo></todo>
-      </div>
-      <div class="order-1 order-sm-2 flex-basis-300">
-        <count-down></count-down>
-      </div>
-      <div class="order-2 order-sm-3 flex-basis-300">
-        <time-line></time-line>
-      </div>
+    <div class="size">
+      <grid-layout :layout="dashboard" :col-num="12" :row-height="30" :is-draggable="true" :is-resizable="true" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true" v-if="!isMobile">
+        <grid-item v-for="(item, index) in dashboard" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="index" @moved="itemMoved" @resized="itemResized">
+          <div class="body">
+            <svg version="1.1" class="remove" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 507.867 507.867" style="enable-background:new 0 0 507.867 507.867;" xml:space="preserve" @click="removeDashboardItem(item)">
+              <g transform="matrix(0.7071 -0.7071 0.7071 0.7071 -13.255 32)">
+                <rect x="-15.994" y="34.743" width="95.992" height="622.24"/>
+                <rect x="-279.122" y="297.871" width="622.24" height="95.992"/>
+              </g>
+            </svg>
+            <component :is="types[item.component]" v-bind="{item: item.ref}"></component>
+          </div>
+        </grid-item>
+      </grid-layout>
+      <v-touch tag="div" class="mi-slider" v-if="isMobile" v-on:swipeleft="handleSwipeLeft" v-on:swiperight="handleSwipeRight">
+        <transition
+          v-for="(item, key) in dashboard"
+          :name="sliderAnimation"
+          :key="item.id"
+        >
+          <div class="slideritem" v-if="key == sliderActive">
+            <svg version="1.1" class="remove" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 507.867 507.867" style="enable-background:new 0 0 507.867 507.867;" xml:space="preserve" @click="removeDashboardItem(item)">
+              <g transform="matrix(0.7071 -0.7071 0.7071 0.7071 -13.255 32)">
+                <rect x="-15.994" y="34.743" width="95.992" height="622.24"/>
+                <rect x="-279.122" y="297.871" width="622.24" height="95.992"/>
+              </g>
+            </svg>
+            <component :is="types[item.component]" v-bind="{item: item.ref}"></component>
+          </div>
+        </transition>
+        <div class="footer container align-items-center justify-content-center">
+          <span class="ball" v-for="(item, key) in dashboard" :key="item.id" :class="{'-active': sliderActive == key}"></span>
+        </div>
+      </v-touch>
     </div>
   </div>
 </template>
 <script>
   import CountDown from '@/components/CountDown'
+  import Card from '@/components/Card'
   import MyHeader from '@/components/Header'
+  import {firebase} from '@/store'
   import TimeLine from '@/components/TimeLine'
   import Todo from '@/components/Todo/Todo'
-  // import Unsplash from 'unsplash-js'
-  // const unsplash = new Unsplash({
-  //   applicationId: '069fb72cbdc668081d55664de65740737e93428ddaf43149ab5e5eb22657e641',
-  //   secret: '6f9a3504d54614939ec2b6dc5b80bbf2f4236029d46f4b95b213f07fa8e9304f',
-  //   callbackUrl: 'https://meu-intercambio-9ac28.firebaseapp.com/images'
-  // })
+  import {GridLayout, GridItem} from 'vue-grid-layout'
+
   export default{
-    components: {CountDown, MyHeader, Todo, TimeLine},
+    components: {Card, CountDown, GridLayout, GridItem, MyHeader, Todo, TimeLine},
     computed: {
+      isMobile () {
+        return this.$store.state.isMobile
+      },
       photos () {
         return this.$store.state.photos
       },
@@ -37,19 +62,99 @@
     },
     data () {
       return {
-        todos: [{
-          status: true,
-          desc: 'Tirar passaporte'
-        },
-        {
-          status: true,
-          desc: 'Comprar passagem'
-        }]
+        dashboard: [],
+        sliderAnimation: 'slide-fade-right',
+        sliderActive: 0,
+        types: {
+          'Cards': Card,
+          'CountDown': CountDown,
+          'Timeline': TimeLine,
+          'Todo': Todo
+        }
       }
+    },
+    methods: {
+      getComponent (type) {
+        if (type === 'TODO') {
+          return Todo
+        } else {
+          return type
+        }
+      },
+      itemMoved (i, newX, newY) {
+        const item = this.dashboard.find(item => item.i === i)
+        item.x = newX
+        item.y = newY
+        firebase.database().ref(`users/${this.user.uid}/dashboard/${item.id}`).set(item)
+      },
+      itemResized (i, newH, newW) {
+        const item = this.dashboard.find(item => item.i === i)
+        item.h = newH
+        item.w = newW
+        firebase.database().ref(`users/${this.user.uid}/dashboard/${item.id}`).set(item)
+      },
+      getLeftClass (index) {
+        if (this.sliderActive === 0 && index === this.dashboard.length - 1) {
+          return true
+        } else if (this.sliderActive - 1 === index) {
+          return true
+        } else {
+          return false
+        }
+      },
+      getRightClass (index) {
+        if (index === 0 && this.sliderActive === this.dashboard.length - 1) {
+          return true
+        } else if (this.sliderActive + 1 === index) {
+          return true
+        } else {
+          return false
+        }
+      },
+      handleSwipeLeft () {
+        this.sliderAnimation = 'slide-fade-right'
+        const next = this.sliderActive + 1
+        if (next > this.dashboard.length - 1) {
+          this.sliderActive = 0
+        } else {
+          this.sliderActive = next
+        }
+      },
+      handleSwipeRight () {
+        this.sliderAnimation = 'slide-fade-left'
+        const previous = this.sliderActive - 1
+        if (previous < 0) {
+          this.sliderActive = this.dashboard.length - 1
+        } else {
+          this.sliderActive = previous
+        }
+      },
+      removeDashboardItem (item) {
+        if (confirm('Deseja remover o item?')) {
+          firebase.database().ref(`users/${this.user.uid}/dashboard/${item.id}`).remove()
+          firebase.database().ref(`${item.ref}`).remove()
+        }
+      },
+      updateDashboard () {
+
+      }
+    },
+    mounted () {
+      firebase
+        .database()
+        .ref(`users/${this.user.uid}/dashboard`)
+        .on('value', (snapshot) => {
+          const dashboard = snapshot.val() || {}
+          const dashboardArray = Object.keys(dashboard).map(key => {
+            return {id: key, ...dashboard[key]}
+          })
+          this.dashboard = dashboardArray
+        })
     }
   }
 </script>
 <style lang="scss" scoped>
+  @import '../scss/variables';
 
   .home{
     margin: 0px;
@@ -61,9 +166,110 @@
     height: 100%;
     overflow: scroll;
     > .size{
-      padding-top: 5%;
-      > div {
-        margin-bottom: 25px;
+      height: 100%;
+      overflow: visible;
+    }
+  }
+  .vue-grid-item{
+    background: $color-w-op9;
+    box-shadow: 0px 0px 10px $color-b-op7;
+    overflow: hidden;
+
+    > .body{
+      height: 100%;
+      position: relative;
+
+      > .remove{
+        display: block;
+        position: absolute;
+        padding: 20px;
+        right: -10px;
+        top: -10px;
+        z-index: 2;
+        width: 50px;
+      }
+    }
+  }
+  .mi-slider{
+    height: 100%;
+    position: relative;
+    width: 100%;
+    .slide-fade-left-enter-active, .slide-fade-right-enter-active {
+      transition: all .3s ease;
+    }
+    .slide-fade-left-leave-active, .slide-fade-right-leave-active {
+      transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    }
+
+    .slide-fade-left-leave-to{
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    .slide-fade-left-enter{
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .slide-fade-right-leave-to{
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .slide-fade-right-enter{
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    > .slideritem {
+      background-color: $color-w-op8;
+      bottom: 30px;
+      box-shadow: 0px 0px 10px $color-b-op7;
+      position: absolute;
+      top: 0px;
+      transition: all 0.5s ease-in-out;
+      width: 100%;
+
+      > .remove{
+        display: block;
+        position: absolute;
+        padding: 20px;
+        right: -10px;
+        top: -10px;
+        z-index: 2;
+        width: 50px;
+      }
+
+      &.-active{
+        // transform: translateX(0);
+        // opacity: 1;
+      }
+    }
+    > .footer{
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      > .ball{
+        background-color: $color-w-op8;
+        box-shadow: 0px 0px 10px $color-b-op7;
+        border-radius: 50%;
+        display: inline-block;
+        margin: 0px 10px;
+        height: 10px;
+        width: 10px;
+
+        &.-active{
+          background-color: $color-1;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 900px){
+    .home{
+      .size{
+        height: 100%;
+        overflow: visible;
       }
     }
   }

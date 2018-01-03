@@ -16,6 +16,8 @@ const store = new Vuex.Store({
   plugins: [localStoragePlugin],
   state: {
     background: 'background.jpg',
+    dashboard: [],
+    isMobile: (/Mobi/.test(navigator.userAgent)),
     user: defaultUser,
     photos: [],
     timeline: {
@@ -28,38 +30,14 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
-    addTodo (state, todo) {
-      state.todos.items.push(todo)
-    },
     setUser (state, user) {
-      // if (user.destiny) {
-      //   const randIndex = Math.floor(Math.random() * (29 - 0 + 1)) + 0
-      //   state.background = `${user.destiny.id}/${randIndex}.jpeg`
-      // }
       state.user = user
     },
     setPhotos (state, photos) {
       state.photos = photos
-    },
-    setTimeline (state, timeline) {
-      state.timeline = {
-        fetching: false,
-        items: timeline
-      }
-    },
-    setTodos (state, todos) {
-      state.todos = {
-        fetching: false,
-        items: todos
-      }
     }
   },
   actions: {
-    addTimelineItem ({commit, dispatch, state}, item) {
-      const timelineItem = firebase.database().ref(`timeline/${state.user.uid}`).push()
-      console.log(item)
-      timelineItem.set(item)
-    },
     async auth ({ commit, dispatch }) {
       const provider = new firebase.auth.GoogleAuthProvider()
       try {
@@ -86,39 +64,8 @@ const store = new Vuex.Store({
       const photos = snapshot.val() || []
       commit('setPhotos', photos)
     },
-    async getTimeline ({commit, state}) {
-      firebase.database().ref(`timeline/${state.user.uid}`).on('value', (snapshot) => {
-        const timeline = snapshot.val() || {}
-        const timelineArray = Object.keys(timeline).map(key => {
-          return {id: key, ...timeline[key]}
-        })
-        commit('setTimeline', timelineArray)
-      })
-    },
-    async getTodos ({ commit, state }) {
-      firebase.database().ref(`todos/${state.user.uid}`).on('value', (snapshot) => {
-        const todos = snapshot.val() || {}
-        const todosArray = Object.keys(todos).map(key => {
-          return {id: key, ...todos[key]}
-        })
-        commit('setTodos', todosArray)
-      })
-    },
-    addTodo ({commit, state}, todo) {
-      const newTodo = firebase.database().ref(`todos/${state.user.uid}`).push()
-      newTodo.set(todo)
-    },
     logout ({commit}, todo) {
       commit('setUser', {})
-    },
-    removeTodo ({state}, todo) {
-      firebase.database().ref(`todos/${state.user.uid}/${todo.id}`).remove()
-    },
-    setShipmentDate ({commit, state}, date) {
-      const user = {...state.user}
-      user.shipmentDate = date
-      firebase.database().ref(`users/${state.user.uid}`).set(user)
-      commit('setUser', user)
     },
     setUser ({commit}, user) {
       if (user.token) {
@@ -127,9 +74,6 @@ const store = new Vuex.Store({
         user.isAuth = false
       }
       commit('setUser', user)
-    },
-    updateTodo ({commit, state}, todo) {
-      firebase.database().ref(`todos/${state.user.uid}/${todo.id}`).set(todo)
     },
     updateUser ({commit, dispatch}, user) {
       firebase.database().ref(`users/${user.uid}`).set(user)
@@ -151,4 +95,12 @@ const store = new Vuex.Store({
   }
 })
 
+const DashboardTypes = {
+  'Cards': 'Card',
+  'CountDown': 'CountDown',
+  'Timeline': 'TimeLine',
+  'Todo': 'Todo'
+}
+
 export default store
+export { firebase, DashboardTypes }

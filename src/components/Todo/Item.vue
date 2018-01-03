@@ -1,7 +1,6 @@
 <template>
   <div class="todo-item container align-items-center justify-content-between" :class="{'-done': !todo.status}" >
-
-    <input type="text" class="title" v-model="todo.desc" v-if="!todo.id" v-on:blur="addTodo(todo)">
+    <input type="text" class="title" v-model="todo.desc" v-if="!todo.id" v-on:blur="addTodo(todo)" placeholder="Adicionar uma tarefa nova" autofocus="true">
     <div class="container row" @click="changeStatus(todo)" v-if="todo.id">
       <p v-if="todo.id" class="title">{{todo.desc}}</p>
       <span class="date" v-if="todo.id">{{todo.date | datetime}}</span>
@@ -22,14 +21,16 @@
     props: ['todo'],
     methods: {
       addTodo (todo) {
-        this.$store.dispatch('addTodo', todo)
+        if (todo.desc && todo.desc.trim().length > 0) {
+          this.$emit('new', todo)
+        }
       },
       changeStatus (todo) {
         todo.status = !todo.status
-        this.$store.dispatch('updateTodo', {...todo})
+        this.$emit('update', todo)
       },
       remove (todo) {
-        this.$store.dispatch('removeTodo', todo)
+        this.$emit('remove', todo)
       }
     }
   }

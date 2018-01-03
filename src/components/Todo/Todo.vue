@@ -1,53 +1,73 @@
 <template>
   <div class="todo-card">
-    <p class="title">A fazer</p>
-    <div class="loading container justify-content-center" v-if="todos.fetching">
+    <input v-model="name" class="title" @change="updateName">
+    <div class="loading container justify-content-center" v-if="fetching">
       <mi-spinner/>
     </div>
-    <p v-if="!todos.fetching && todos.items.length == 0">Você não tem nenhuma tarefa para realizar!</p>
-    <div class="list" v-if="!todos.fetching">
-      <item v-for="(todo, index) in todos.items" :todo="todo" :key="index" v-on:status="changeStatus" v-on:remove="remove"/>
+    <div class="list" v-if="!fetching">
+      <item v-for="(todo, index) in todos" :todo="todo" :key="index" @new="addTodo" @update="updateTodo" @remove="removeTodo"/>
     </div>
-    <button @click="addTodo" class="btnnew">+ Nova tarefa</button>
-    <!-- <div class="todo-footer">
-      <input type="text" placeholder="ex. Comprar passagem aerea" v-model="todo.desc">
-    </div> -->
   </div>
 </template>
 <script>
   import Item from '@/components/Todo/Item'
   import MiSpinner from '@/components/Spinner'
+  import {firebase} from '@/store'
+  import moment from 'moment'
+
   export default{
     components: {Item, MiSpinner},
-    computed: {
-      todos () {
-        return this.$store.state.todos
-      }
-    },
+    props: ['item'],
     data () {
       return {
+        fetching: true,
+        name: '',
         todo: {
           desc: null,
           status: true
-        }
+        },
+        todos: []
       }
     },
     methods: {
-      addTodo () {
-        const todo = {status: true, desc: null, date: new Date().getTime()}
-        this.$store.commit('addTodo', todo)
+      addTodo (todo) {
+        const newTodo = firebase.database().ref(`${this.item}/items`).push()
+        newTodo.set(todo)
       },
-      changeStatus (todo) {
-        const index = this.todos.findIndex(todoItem => todoItem.desc === todo.desc)
-        todo.status = !todo.status
-        this.todos[index] = {...todo}
+      removeTodo (todo) {
+        firebase.database().ref(`${this.item}/items/${todo.id}`).remove()
       },
-      remove (todo) {
-        console.log('Todo', todo)
+      updateName () {
+        firebase.database().ref(this.item).child('name').set(this.name)
+      },
+      updateTodo (todo) {
+        firebase.database().ref(`${this.item}/items/${todo.id}`).set(todo)
       }
     },
     mounted () {
-      this.$store.dispatch('getTodos')
+      const ref = firebase.database().ref(this.item)
+      ref.on('value', (snapshot) => {
+        const {items, name} = snapshot.val() || {}
+        const todosArray = Object.keys(items || {}).map(key => {
+          return {id: key, ...items[key]}
+        })
+        this.todos = todosArray
+        this.todos.push({
+          desc: null,
+          status: true,
+          date: moment().format('Y-M-D h:m:s')
+        })
+        this.name = name
+        this.fetching = false
+      })
+    },
+    watch: {
+      todos () {
+        setTimeout(() => {
+          const list = this.$el.querySelector('.todo-card .list')
+          list.scrollTop = list.scrollHeight
+        }, 0)
+      }
     }
   }
 </script>
@@ -55,10 +75,7 @@
   @import '../../scss/variables';
 
   .todo-card{
-    box-shadow: 0px 0px 10px $color-b-op7;
-    padding: 20px 20px 50px;
-    background-color: $color-w-op8;
-    max-height: 450px;
+    height: 100%;
     position: relative;
 
     > .loading {
@@ -69,33 +86,26 @@
     }
 
     > .title{
+      background: none;
+      border: none;
       color: $color-b-op7;
+      font-size: 16px;
       font-weight: 600;
+      margin: 10px 0 0 20px;
+      padding: 5px;
     }
 
     > .list{
-      margin: 0px;
-      padding: 0px;
-      overflow: scroll;
-      position: relative;
+      bottom: 0px;
+      height: 100%;
+      left: 25px;
       list-style: none;
-      max-height: 300px;
-    }
-
-    > .btnnew{
-      background-color: $color-1;
-      border: none;
-      border-radius: 20px;
-      bottom: -20px;
-      box-shadow: 0px 0px 10px $color-b-op3;
-      color: $color-w-op9;
-      font-weight: 600;
-      font-size: 15px;
+      margin: 0px;
+      overflow-y: scroll;
+      padding: 0px 0px 100px 0px;
       position: absolute;
-      padding: 15px 10px;
-      left: 50%;
-      margin-left: -65px;
-      width: 130px;
+      right: 20px;
+      top: 50px;
     }
   }
 

@@ -1,6 +1,6 @@
 <template>
   <div class="timeline-card">
-    <p class="title">Linha do tempo</p>
+    <input v-model="name" class="title" @change="updateName">
     <div v-if="fetching" class="loading container justify-content-center">
       <mi-spinner/>
     </div>
@@ -24,32 +24,43 @@
 <script>
   import MiSpinner from '@/components/Spinner'
   import moment from 'moment'
+  import {firebase} from '@/store'
+
   export default {
     components: {MiSpinner},
+    props: ['item'],
     data () {
       return {
+        fetching: true,
+        name: '',
         newItem: {
           title: null,
           date: moment().format('Y-M-D')
-        }
+        },
+        timelineItems: []
       }
     },
     methods: {
       createNewItem () {
-        this.$store.dispatch('addTimelineItem', {...this.newItem})
+        // this.$store.dispatch('addTimelineItem', {...this.newItem})
+        const newItem = firebase.database().ref(`${this.item}/items`).push()
+        newItem.set(this.newItem)
         this.newItem = {title: null, date: moment().format('Y-M-D')}
-      }
-    },
-    computed: {
-      timelineItems () {
-        return this.$store.getters.timelineByDate
       },
-      fetching () {
-        return this.$store.state.timeline.fetching
+      updateName () {
+        firebase.database().ref(this.item).child('name').set(this.name)
       }
     },
     mounted () {
-      this.$store.dispatch('getTimeline')
+      firebase
+        .database()
+        .ref(this.item)
+        .on('value', (snapshot) => {
+          const {items, name} = snapshot.val() || {}
+          this.timelineItems = items || []
+          this.name = name
+          this.fetching = false
+        })
     }
   }
 </script>
@@ -57,6 +68,9 @@
   @import '../scss/variables';
 
   .timeline-card{
+    height: 100%;
+    padding: 20px;
+
     > .loading{
       margin: 30px 0;
       .mispinner{
@@ -64,15 +78,21 @@
       }
     }
 
-    background: $color-w-op8;
-    box-shadow: 0px 0px 10px $color-b-op7;
-    padding: 20px;
-
     > .title{
+      background: none;
+      border: none;
       color: $color-b-op7;
+      font-size: 16px;
       font-weight: 600;
+      padding: 5px;
     }
 
+    > .list {
+      height: 100%;
+      overflow-y: scroll;
+      padding-left: 8px;
+      width: 100%;
+    }
 
     .item{
       padding: 10px 0px 10px 20px;

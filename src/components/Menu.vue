@@ -115,9 +115,9 @@
     background: $color-b-op7;
     bottom: 0px;
     top: 0px;
-    left: 100%;
+    left: -100%;
     position: fixed;
-    transition: all 0.3s ease-in;
+    transition: all 0.2s ease-in-out;
     width: 100%;
     z-index: 10;
     &.open{

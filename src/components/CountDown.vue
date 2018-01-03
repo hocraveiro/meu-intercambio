@@ -1,11 +1,9 @@
 <template>
   <div class="countdown-card">
-    <p class="title" v-if="!shipmentDate">
-      Tempo para o embarque
-    </p>
+    <input v-model="name" class="title" @change="updateName" placeholder="Informe um nome para o countdown">
     <div v-if="!shipmentDate">
       <input type="date" v-model="shipmentDate" class="date">
-      <span class="comp">Informe a data de embarque</span>
+      <span class="comp">Informe uma data</span>
     </div>
 
 
@@ -16,7 +14,7 @@
       <div class="block">{{timeLeft.seconds()}}  <span class="comp">segundos</span></div>
     </div>
     <p v-if="shipmentDate" class="textfooter">
-      restantes para o embarque no dia
+      restantes para o dia
       <span class="shipmentdate">{{shipmentDate | date}}</span>.
       <span class="remove" @click="remove">(Alterar)</span>
     </p>
@@ -24,12 +22,16 @@
 </template>
 <script>
   import moment from 'moment'
+  import {firebase} from '@/store'
+
   export default {
-    // props: ['shipmentDate'],
+    props: ['item'],
     data () {
       return {
         currentInterval: null,
         countdown: null,
+        name: null,
+        shipmentDate: null,
         timeLeft: null
       }
     },
@@ -46,47 +48,55 @@
       },
       remove () {
         clearInterval(this.currentInterval)
-        this.$store.dispatch('setShipmentDate', null)
-        this.shipmentDate = null
+        firebase.database().ref(this.item).child('shipmentDate').remove()
         this.timeLeft = null
-      }
-    },
-    computed: {
-      shipmentDate: {
-        get () {
-          return this.$store.state.user.shipmentDate
-        },
-        set (value) {
-          this.$store.dispatch('setShipmentDate', value)
-          if (value) {
-            this.initCountDown()
-          }
-        }
+      },
+      updateName () {
+        firebase.database().ref(this.item).child('name').set(this.name)
       }
     },
     beforeDestroy () {
       this.remove()
     },
     mounted () {
-      if (this.shipmentDate) {
-        this.initCountDown()
+      firebase
+        .database()
+        .ref(this.item)
+        .on('value', (snapshot) => {
+          const {shipmentDate, name} = snapshot.val() || {}
+          this.shipmentDate = shipmentDate
+          this.name = name
+          this.fetching = false
+
+          if (this.shipmentDate) {
+            this.initCountDown()
+          }
+        })
+    },
+    watch: {
+      shipmentDate (value) {
+        if (value) {
+          firebase.database().ref(this.item).child('shipmentDate').set(value)
+        }
       }
     }
-
   }
 </script>
 <style lang="scss" scoped>
   @import '../scss/variables';
 
   .countdown-card{
-    background: $color-w-op8;
-    box-shadow: 0px 0px 10px $color-b-op7;
     padding: 20px;
     width: 100%;
 
     > .title{
+      background: none;
+      border: none;
       color: $color-b-op7;
+      font-size: 16px;
       font-weight: 600;
+      padding: 5px;
+      width: 100%;
     }
 
     .date{
