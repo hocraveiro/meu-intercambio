@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "meu-intercambio-9ac28"
+    "default": "meu-intercambio-9ac28",
+    "staging": "meu-intercambio-staging"
   }
 }
