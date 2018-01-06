@@ -1,10 +1,6 @@
 <template>
   <div class="todo-card">
-    <input v-model="name" class="title" @change="updateName">
-    <div class="loading container justify-content-center" v-if="fetching">
-      <mi-spinner/>
-    </div>
-    <div class="list" v-if="!fetching">
+    <div class="list">
       <item v-for="(todo, index) in todos" :todo="todo" :key="index" @new="addTodo" @update="updateTodo" @remove="removeTodo"/>
     </div>
   </div>
@@ -20,7 +16,6 @@
     props: ['item'],
     data () {
       return {
-        fetching: true,
         name: '',
         todo: {
           desc: null,
@@ -31,23 +26,20 @@
     },
     methods: {
       addTodo (todo) {
-        const newTodo = firebase.database().ref(`${this.item}/items`).push()
+        const newTodo = firebase.database().ref(`${this.item}`).push()
         newTodo.set(todo)
       },
       removeTodo (todo) {
-        firebase.database().ref(`${this.item}/items/${todo.id}`).remove()
-      },
-      updateName () {
-        firebase.database().ref(this.item).child('name').set(this.name)
+        firebase.database().ref(`${this.item}/${todo.id}`).remove()
       },
       updateTodo (todo) {
-        firebase.database().ref(`${this.item}/items/${todo.id}`).set(todo)
+        firebase.database().ref(`${this.item}/${todo.id}`).set(todo)
       }
     },
     mounted () {
       const ref = firebase.database().ref(this.item)
       ref.on('value', (snapshot) => {
-        const {items, name} = snapshot.val() || {}
+        const items = snapshot.val() || {}
         const todosArray = Object.keys(items || {}).map(key => {
           return {id: key, ...items[key]}
         })
@@ -57,8 +49,7 @@
           status: true,
           date: moment().format('Y-M-D h:m:s')
         })
-        this.name = name
-        this.fetching = false
+        this.$emit('loaded')
       })
     },
     watch: {
@@ -77,35 +68,19 @@
   .todo-card{
     height: 100%;
     position: relative;
-
-    > .loading {
-      margin: 30px 0;
-      .mispinner{
-        width: 30px;
-      }
-    }
-
-    > .title{
-      background: none;
-      border: none;
-      color: $color-b-op7;
-      font-size: 16px;
-      font-weight: 600;
-      margin: 10px 0 0 20px;
-      padding: 5px;
-    }
+    width: 100%;
 
     > .list{
       bottom: 0px;
       height: 100%;
-      left: 25px;
+      left: 5px;
       list-style: none;
       margin: 0px;
       overflow-y: scroll;
-      padding: 0px 0px 100px 0px;
+      padding-bottom: 40px;
       position: absolute;
-      right: 20px;
-      top: 50px;
+      right: 0px;
+      top: 0px;
     }
   }
 

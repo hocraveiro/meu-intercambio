@@ -1,12 +1,9 @@
 <template>
   <div class="countdown-card">
-    <input v-model="name" class="title" @change="updateName" placeholder="Informe um nome para o countdown">
-    <div v-if="!shipmentDate">
+    <div v-if="!shipmentDate" class="container column">
       <input type="date" v-model="shipmentDate" class="date">
       <span class="comp">Informe uma data</span>
     </div>
-
-
     <p class="days" v-if="timeLeft">{{parseInt(timeLeft.as('days'))}} <span class="comp">dias</span></p>
     <div class="time" v-if="timeLeft">
       <div class="block">{{timeLeft.hours()}}  <span class="comp">horas</span> </div>
@@ -37,7 +34,7 @@
     },
     methods: {
       initCountDown () {
-        const today = Date.now()
+        const today = moment()
         const shipmentDate = new Date(this.shipmentDate).getTime()
         const diff = shipmentDate - today
         this.timeLeft = moment.duration(diff)
@@ -50,9 +47,6 @@
         clearInterval(this.currentInterval)
         firebase.database().ref(this.item).child('shipmentDate').remove()
         this.timeLeft = null
-      },
-      updateName () {
-        firebase.database().ref(this.item).child('name').set(this.name)
       }
     },
     beforeDestroy () {
@@ -63,10 +57,9 @@
         .database()
         .ref(this.item)
         .on('value', (snapshot) => {
-          const {shipmentDate, name} = snapshot.val() || {}
+          const {shipmentDate} = snapshot.val() || {}
           this.shipmentDate = shipmentDate
-          this.name = name
-          this.fetching = false
+          this.$emit('loaded')
 
           if (this.shipmentDate) {
             this.initCountDown()
@@ -86,27 +79,19 @@
   @import '../scss/variables';
 
   .countdown-card{
-    padding: 20px;
     width: 100%;
 
-    > .title{
-      background: none;
-      border: none;
-      color: $color-b-op7;
-      font-size: 16px;
-      font-weight: 600;
-      padding: 5px;
-      width: 100%;
+    > .container{
+      > .date{
+        border: 1px solid $color-1;
+        background: none;
+        color: $color-1;
+        margin-top: 20px;
+        padding: 10px;
+        width: 100%;
+      }
     }
 
-    .date{
-      border: 1px solid $color-1;
-      background: none;
-      color: $color-1;
-      padding: 10px;
-      margin-top: 30px;
-      width: calc(100% - 20px);
-    }
 
     > .days{
       font-size: 62px;

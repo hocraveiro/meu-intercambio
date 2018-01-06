@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import store from '../store'
 import Router from 'vue-router'
+
+import Dashboard from '@/components/Dashboard/Dashboard'
 import Destiny from '@/components/Destiny'
-import Home from '@/components/Home'
 import Login from '@/components/Login'
 
 Vue.use(Router)
@@ -12,7 +13,7 @@ const router = new Router({
     {
       path: '/',
       name: 'Home',
-      component: Home
+      component: Dashboard
     },
     {
       path: '/destiny',

@@ -79,19 +79,6 @@ const store = new Vuex.Store({
       firebase.database().ref(`users/${user.uid}`).set(user)
       dispatch('setUser', user)
     }
-  },
-  getters: {
-    timelineByDate (state) {
-      return state.timeline.items.sort((item1, item2) => {
-        if (item1.date > item2.date) {
-          return -1
-        } else if (item1.date < item2.date) {
-          return 1
-        } else {
-          return 1
-        }
-      })
-    }
   }
 })
 

@@ -19,7 +19,7 @@ Vue.filter('datetime', (value) => {
 Vue.filter('date', (value) => {
   // var options = {year: 'numeric', month: 'numeric', day: 'numeric'}
   // return new Intl.DateTimeFormat('pt-BR', options).format(new Date(value))
-  return moment(value).format('D/M/Y')
+  return moment(value).format('DD/MM/Y')
 })
 
 // Vue.prototype.db = firebase.database()

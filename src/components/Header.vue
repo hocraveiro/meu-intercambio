@@ -105,11 +105,11 @@
 
           const newItem = ref.push()
           newItem.set({
-            name,
-            items: []
+            // name,
+            // items: []
           })
 
-          const dashItem = {x, y, 'w': 4, 'h': 8, 'i': dashboardArray.length + 1, component: item, ref: newItem.path.toString()}
+          const dashItem = {x, y, 'w': 4, 'h': 8, 'i': dashboardArray.length + 1, component: item, ref: newItem.path.toString(), name}
           const newDash = firebase.database().ref(`users/${this.user.uid}/dashboard`).push()
           newDash.set(dashItem)
         })
